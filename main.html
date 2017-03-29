@@ -1,0 +1,324 @@
+<!DOCTYPE HTML>
+<html>
+
+<head>
+    <title>Candle Chart</title>
+    <meta charset="utf-8">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+    <style>
+        .container {
+            position: relative;
+            padding-left: 601px;
+            max-width: 600px;
+            margin: 0 auto;
+            height: 451px;
+            border: 1px solid #d5d5d5;
+        }
+        /* main canvas */
+        
+        #candle-chart {
+            position: absolute;
+            top: 0;
+            left: 0px;
+            border-right: 1px solid #d5d5d5;
+            border-bottom: 1px solid #d5d5d5;
+        }
+        /* right canvas */
+        
+        #price {
+            position: absolute;
+            top: 0;
+            left: 501px;
+            width: 99px;
+            border-right: 1px solid #d5d5d5;
+            border-bottom: 1px solid #d5d5d5;
+        }
+        /* float canvas */
+        
+        #float {
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 1;
+            pointer-events: none;
+        }
+        /* sub canvas */
+        
+        #volume-chart {
+            position: absolute;
+            top: 351px;
+            left: 0;
+            border-right: 1px solid #d5d5d5;
+            background: #f2f2f2;
+        }
+        
+        .options {
+            position: absolute;
+            top: 351px;
+            left: 501px;
+            width: 100px;
+            height: 100px;
+            border-right: 1px solid #d5d5d5;
+            overflow: hidden;
+            box-sizing: border-box;
+            -webkit-box-sizing: border-box;
+            -moz-box-sizing: border-box;
+        }
+        
+        .options div {
+            width: 100%;
+            height: 25px;
+            line-height: 25px;
+            padding-left: 5px;
+            font-size: 0.8em;
+            border-bottom: 1px solid #d5d5d5;
+            box-sizing: border-box;
+            -webkit-box-sizing: border-box;
+            -moz-box-sizing: border-box;
+            cursor: pointer;
+            user-select: none;
+        }
+        
+        .options div.active {
+            background: #eee;
+            text-decoration: underline;
+            font-weight: bold;
+        }
+        
+        .options div:last-child {
+            border: 0;
+        }
+        
+        .options div:hover {
+            background: #eee;
+        }
+        
+        .container .data-set {
+            box-sizing: border-box;
+            -webkit-box-sizing: border-box;
+            -moz-box-sizing: border-box;
+            width: 100%;
+            height: 100%;
+            background: #eee;
+            overflow-y: scroll;
+        }
+        .container .loading-cover{
+            position: absolute;
+            top:0;
+            left:0;
+
+            width:600px;
+            height:100%;
+
+            z-index:10;
+        }
+        .container .loading-cover:before{
+            content:"";
+            display: block;
+
+            width:100%;
+            height:100%;
+
+            opacity: 0.6;
+            background:#fff;
+        }        
+        .container .loading-cover:after{
+            position: absolute;
+            content:"";
+
+            display:block;
+
+            background-image: url("./resource/loading.gif");
+            background-size: 100px;
+            background-repeat: no-repeat;
+            
+            width:256px;
+            height:256px;
+
+            left:50%;
+            top:50%;
+
+            margin-left: -50px;
+            margin-top: -50px;
+        }  
+        .container .search-wrap {
+            width: 100%;
+            height: 40px;
+            border-bottom: 1px solid #d5d5d5;
+            background: #fff;
+        }
+        
+        .search-wrap:after {
+            content: "";
+            clear: both;
+            display: both;
+        }
+        
+        .search-wrap .input-search {
+            float: left;
+            width: 80%;
+            height: 100%;
+            border: 0;
+            padding-left: 10px;
+            box-sizing: border-box;
+            -webkit-box-sizing: border-box;
+            -moz-box-sizing: border-box;
+        }
+        
+        .search-wrap .btn-search {
+            float: left;
+            width: 20%;
+            height: 100%;
+            background: orange;
+            font-weight: bold;
+            color: #fff;
+            font-size: 0.9em;
+            text-align: center;
+            line-height: 38px;
+            text-shadow: 0px 0px 1px #DF3A01;
+            cursor: pointer;
+            user-select: none;
+        }
+        
+        .search-wrap .input-search:focus {
+            outline: 0px;
+        }
+        
+        .company-block {
+            width: 100%;
+            padding: 10px;
+            background: #fff;
+            border-bottom: 1px solid #d5d5d5;
+            box-sizing: border-box;
+            -webkit-box-sizing: border-box;
+            -moz-box-sizing: border-box;
+            transition: background 0.2s;
+            cursor: pointer;
+            user-select: none;
+            color: #333;
+        }
+        
+        .now-symbol {
+            width: 100%;
+            padding: 5px 5px;
+            box-sizing: border-box;
+            -webkit-box-sizing: border-box;
+            -moz-box-sizing: border-box;
+        }
+        
+        .company-block.active {
+            background: #E0ECF8!important;
+            font-weight: bold;
+        }
+        
+        .company-block:hover {
+            background: #eee;
+        }
+        
+        .company-block:active {
+            background: #e2e2e2;
+        }
+    </style>
+</head>
+
+<body>
+    <section class="container">
+        <!-- candle chart -->
+        <canvas id="candle-chart" width=500 height=350>
+            HTML5를 지원하지 않는 브라우저 입니다.
+        </canvas>
+        <canvas id="price" width=99 height=350></canvas>
+        <canvas id="float" width=600 height=450></canvas>
+
+        <!-- volume chart -->
+        <canvas id="volume-chart" width=500 height=100>
+            HTML5를 지원하지 않는 브라우저 입니다.
+        </canvas>
+
+        <article class="options" data-type="time">
+            <div data-value="d:1">1 Day</div>
+            <div data-value="m:1">1 Month</div>
+            <div data-value="m:3" class="active">3 Months</div>
+            <div data-value="m:6">6 Months</div>
+        </article>
+
+        <section class="data-set">
+            <section class="search-wrap">
+                <input type="text" class="input-search" placeholder="종목코드를 입력. (Yahoo Finance 기준.)">
+                <div class="btn-search">검색</div>
+            </section>
+            <section class="company-block active" data-id="005930.KS">삼성전자 Samsung Electronics</section>
+            <section class="company-block" data-id="009540.KS">현대중공업 Hyundai Industries</section>
+            <section class="company-block" data-id="035420.KS">네이버 Naver</section>
+            <section class="company-block" data-id="001040.KS">씨제이 Cj</section>
+            <section class="company-block" data-id="078930.KS">지에스 Gs</section>
+            <section class="company-block" data-id="035720.KQ">카카오 Kakao</section>
+        </section>
+
+        <section class="loading-cover"></section>
+    </section>
+
+    <script src='./js/chart.js'></script>
+    <script>
+        var canvas = document.getElementById("candle-chart");
+
+        var pCtx = document.getElementById('price').getContext('2d');
+        var fCtx = document.getElementById('float').getContext('2d');
+
+        pCtx.translate(0.5, 0.5);
+        fCtx.translate(0.5, 0.5);
+
+        var c = new Candle(canvas);
+
+        c.options.format.candle.high = "High";
+        c.options.format.candle.low = "Low";
+        c.options.format.candle.close = "Close";
+        c.options.format.candle.open = "Open";
+
+        var s = new Chart(document.getElementById('volume-chart'));
+        s.options.format.data = "Volume";
+        s.options.item.style.fillColor = 'rgba(0, 152, 246, 0.5)';
+        /************************************/
+        var nowSymbol;
+        var interval = {
+            m: 3
+        };
+        var cache = {};
+        /************************************/
+
+        String.prototype.string = function (len) { var s = '', i = 0; while (i++ < len) { s += this; } return s; };
+        String.prototype.zf = function (len) { return "0".string(len - this.length) + this; };
+        Number.prototype.zf = function (len) { return this.toString().zf(len); };
+        Date.prototype.format = function (f) {
+            if (!this.valueOf()) return " ";
+
+            var weekName = ["일요일", "월요일", "화요일", "수요일", "목요일", "금요일", "토요일"];
+            var d = this;
+
+            return f.replace(/(yyyy|yy|MM|dd|E|hh|mm|ss|a\/p)/gi, function ($1) {
+                switch ($1) {
+                    case "yyyy": return d.getFullYear();
+                    case "yy": return (d.getFullYear() % 1000).zf(2);
+                    case "MM": return (d.getMonth() + 1).zf(2);
+                    case "dd": return d.getDate().zf(2);
+                    case "E": return weekName[d.getDay()];
+                    case "HH": return d.getHours().zf(2);
+                    case "hh": return ((h = d.getHours() % 12) ? h : 12).zf(2);
+                    case "mm": return d.getMinutes().zf(2);
+                    case "ss": return d.getSeconds().zf(2);
+                    case "a/p": return d.getHours() < 12 ? "오전" : "오후";
+                    default: return $1;
+                }
+            });
+        };
+    </script>
+    <script>
+        /*
+
+        */
+    </script>
+    <script src="./js/ui.js"></script>
+    <script src="./js/dom-ui.js"></script>
+</body>
+
+</html>
