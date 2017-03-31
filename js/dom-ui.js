@@ -36,7 +36,7 @@ $(document).ready(function () {
         var f = s[0];
         var v = Number(s[1]);
 
-        if (interval[f] === undefined || interval[f] === v || v === NaN) {
+        if (interval[f] === undefined || interval[f] === v || isNaN(V)) {
             return;
         }
 
@@ -58,7 +58,8 @@ $(document).ready(function () {
                     c.update(arr, onUpdate);
                     s.update(arr, function () {
                         s.render();
-                    }); c.trigger('mousemove', prevMousePos);
+                    }); 
+                    c.trigger('mousemove', prevMousePos);
                 });
                 break;
             case 39:
@@ -66,7 +67,8 @@ $(document).ready(function () {
                     c.update(arr, onUpdate);
                     s.update(arr, function () {
                         s.render();
-                    }); c.trigger('mousemove', prevMousePos);
+                    }); 
+                    c.trigger('mousemove', prevMousePos);
                 });
                 break;
             case 38:
@@ -83,7 +85,8 @@ $(document).ready(function () {
                     c.update(arr, onUpdate);
                     s.update(arr, function () {
                         s.render();
-                    }); c.trigger('mousemove', prevMousePos);
+                    }); 
+                    c.trigger('mousemove', prevMousePos);
                 });
                 break;
         }

@@ -2,6 +2,10 @@ function loadQuote(symbol, date, callback) {
     var q;
     var d = new Date(date);
 
+    if (isNaN(interval.m)) {
+        $(".options[data-type=time] div[data-value='m:3']").addClass("active");
+        interval.m = 3;
+    }
     d.setMonth(d.getMonth() - interval.m);
 
     /* 그리니치 표준시로 조정 */
@@ -14,7 +18,6 @@ function loadQuote(symbol, date, callback) {
     var tk = nowSymbol;
 
     nowSymbol = "loading";
-
     $(".loading-cover").show();
     $.ajax({
         url: "https://query.yahooapis.com/v1/public/yql?q=select%20*%20from%20%20%20yahoo.finance.historicaldata%0A%20%20%20%20%20%20%20%20%20where%20%20symbol%20%20%20%20%3D%20%22" + symbol + "%22%0A%20%20%20%20%20%20%20%20%20and%20%20%20%20startDate%20%3D%20%22" + sf + "%22%0A%20%20%20%20%20%20%20%20%20and%20%20%20%20endDate%20%20%20%3D%20%22" + ef + "%22&format=json&diagnostics=true&env=store%3A%2F%2Fdatatables.org%2Falltableswithkeys&callback=",
@@ -68,6 +71,8 @@ function loadQuote(symbol, date, callback) {
 loadQuote("005930.KS", new Date(), function () {
     c.addEventListener("mouseout", function () {
         fCtx.clearRect(-100, -100, this.window.width + 500, this.window.height + 500);
+        prevMousePos.x = NaN;
+        prevMousePos.y = NaN;
     });
     c.addEventListener('mousemove', function (pos, index) {
         var s = this.items[index];
