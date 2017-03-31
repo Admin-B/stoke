@@ -36,7 +36,7 @@ $(document).ready(function () {
         var f = s[0];
         var v = Number(s[1]);
 
-        if (interval[f] === undefined || interval[f] === v || isNaN(V)) {
+        if (interval[f] === undefined || interval[f] === v || isNaN(v)) {
             return;
         }
 
