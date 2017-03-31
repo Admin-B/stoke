@@ -22,7 +22,6 @@ function loadQuote(symbol, date, callback) {
         type: "get",
         success: function (res) {
             $(".loading-cover").hide();
-
             if (!res.query.results) {
                 alert("No Results : 검색결과가 없습니다.");
                 nowSymbol = tk;
@@ -31,12 +30,33 @@ function loadQuote(symbol, date, callback) {
             nowSymbol = symbol;
 
             q = res.query.results.quote;
-            
+
+            if (cache[symbol]) {
+                var l = cache[symbol].data.length;
+                if (q.length > l) {
+                    cache[symbol].data = q;
+                }
+            } else {
+                cache[symbol] = {
+                    data: q,
+                    s: 0,
+                    l: 0
+                };
+            }
+            cache[symbol].s = 0;
+            cache[symbol].l = q.length;
+
             c.update(q, onUpdate);
             s.update(q, function () {
                 s.render();
             });
-
+            /*
+            adj.update(q, function(){
+                adj.min = c.min;
+                adj.max = c.max;
+                adj.render();
+            });
+            */
             if (typeof callback === "function") {
                 callback();
             }
@@ -154,6 +174,7 @@ loadQuote("005930.KS", new Date(), function () {
         fCtx.fillText(numberWithCommas(Math.floor(s.Low)), x + 45, y + 80);
 
         fCtx.restore();
+        prevMousePos = pos;
     });
 });
 
@@ -210,7 +231,7 @@ function onUpdate() {
         ctx.moveTo(x, 0);
         ctx.lineTo(x, h);
         ctx.closePath();
-        
+
         ctx.stroke();
     }
     ctx.textAlign = "start";

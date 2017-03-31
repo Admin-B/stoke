@@ -10,6 +10,7 @@ function Chart() {
     this.ctx = canvas.getContext('2d');
     this.ctx.translate(0.5, 0.5);
 
+    this.state = {};
     this.options = {
         item: {
             autosize: true,
@@ -39,6 +40,7 @@ function Chart() {
             data: undefined
         }
     };
+    this.eventListeners = {};
     return this;
 }
 Chart.prototype.update = function (items, callback) {
@@ -86,9 +88,27 @@ Chart.prototype.render = function (c) {
     if (c !== false) {
         this.ctx.clearRect(-10, -10, this.window.width + 10, this.window.height + 10);
     }
+
+    var ctx = this.ctx;
+
+    ctx.save();
+
+    ctx.beginPath();
     for (var i = 0; i < this.items.length; i++) {
         this.drawItem(i);
     }
+
+    if (this.state.proced) {
+        //ctx.lineTo(this.state.proced, this.window.height);
+        ctx.strokeStyle = this.options.item.style.strokeColor;
+        ctx.stroke();
+        delete this.state.proced;
+    }
+
+    ctx.closePath();
+
+    ctx.restore();
+
     return this;
 }
 Chart.prototype.drawItem = function (i) {
@@ -111,22 +131,40 @@ Chart.prototype.drawItem = function (i) {
     var w = this.options.item.width;
     var m = this.options.item.margin;
 
-    ctx.save();
 
     var x = Math.floor(i * (m + w) + m / 2);
-    var h = this.map(s, 0, this.max, 0, height);
+    var h = this.map(s, this.min || 0, this.max, 0, height);
 
-    ctx.fillStyle = this.options.item.style.fillColor;
-    if (this.options.item.style.strokeColor) {
-        ctx.strokeStyle = this.options.item.style.strokeColor;
-    } else {
-        ctx.strokeStyle = ctx.fillStyle;
+    switch (this.options.chart.style) {
+        case "stick":
+        default:
+            ctx.fillStyle = this.options.item.style.fillColor;
+            if (this.options.item.style.strokeColor) {
+                ctx.strokeStyle = this.options.item.style.strokeColor;
+            } else {
+                ctx.strokeStyle = ctx.fillStyle;
+            }
+
+            ctx.strokeRect(x, Math.floor(height - h), Math.floor(w), Math.floor(h));
+            ctx.fillRect(x, Math.floor(height - h), Math.floor(w), Math.floor(h));
+            break;
+        case "line":
+            var state = this.state;
+
+            x += Math.floor(w / 2);
+            y = Math.floor(height - h);
+
+            if (state.proced) {
+                ctx.lineTo(x, y);
+            } else {
+                //ctx.moveTo(x, height);
+                ctx.moveTo(x, y);
+            }
+
+            state.proced = x;
+            break;
     }
 
-    ctx.strokeRect(x, Math.floor(height - h), Math.floor(w), Math.floor(h));
-    ctx.fillRect(x, Math.floor(height - h), Math.floor(w), Math.floor(h));
-
-    ctx.restore();
     return 0;
 }
 Chart.prototype.addEventListener = function (type, listener) {
@@ -173,10 +211,31 @@ Chart.prototype.addEventListener = function (type, listener) {
         default:
             return -1;
     }
+    this.eventListeners[type] = listener;
     return 0;
 }
 Chart.prototype.map = function (a, b, c, d, e) { return (a - b) / (c - b) * (e - d) + d }
+Chart.prototype.trigger = function (type, pos) {
+    var listener = this.eventListeners[type];
+    if(typeof listener !== "function"){
+        return -1;
+    }
+    if(typeof pos !== 'object' || typeof pos.x !== 'number' || typeof pos.y !== 'number'){
+        return -1;
+    }
+    var width = this.options.item.width,
+        margin = this.options.item.margin;
 
+    var block = width + margin;
+    var index = this.options.chart.reverse ? this.items.length - 1 - Math.floor(pos.x / block) : Math.floor(pos.x / block);
+
+    if (!this.items[index]) {
+        index = undefined;
+    }
+
+    listener.apply(this, [pos, index]);
+    return 0;
+}
 /***************************** Compatibility *******************************/
 if (typeof Element.prototype.addEventListener === 'undefined') {
     Element.prototype.addEventListener = function (e, callback) {
