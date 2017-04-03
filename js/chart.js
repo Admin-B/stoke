@@ -173,6 +173,7 @@ Chart.prototype.addEventListener = function (type, listener) {
         case "mousedown":
         case "mouseup":
         case "click":
+        case "wheel":
             if (typeof listener !== "function") {
                 return -1;
             }
@@ -191,7 +192,16 @@ Chart.prototype.addEventListener = function (type, listener) {
                 if (!th.items[index]) {
                     index = undefined;
                 }
-
+                if (type === 'wheel') {
+                    var e = event.originalEvent || event;
+                    listener.apply(th, [{
+                        wheelDelta: e.wheelDelta,
+                        wheelDeltaX: e.wheelDeltaX,
+                        wheelDeltaY: e.wheelDeltaY
+                     }, pos, index]);
+                     
+                    return 0;
+                }
                 listener.apply(th, [pos, index]);
 
                 return 0;
@@ -217,10 +227,10 @@ Chart.prototype.addEventListener = function (type, listener) {
 Chart.prototype.map = function (a, b, c, d, e) { return (a - b) / (c - b) * (e - d) + d }
 Chart.prototype.trigger = function (type, pos) {
     var listener = this.eventListeners[type];
-    if(typeof listener !== "function"){
+    if (typeof listener !== "function") {
         return -1;
     }
-    if(typeof pos !== 'object' || typeof pos.x !== 'number' || typeof pos.y !== 'number'){
+    if (typeof pos !== 'object' || typeof pos.x !== 'number' || typeof pos.y !== 'number') {
         return -1;
     }
     var width = this.options.item.width,

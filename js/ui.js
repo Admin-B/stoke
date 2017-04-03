@@ -74,6 +74,20 @@ loadQuote("005930.KS", new Date(), function () {
         prevMousePos.x = NaN;
         prevMousePos.y = NaN;
     });
+    c.addEventListener('wheel', function (e) {
+        if (e.wheelDelta === 0 || nowSymbol === 'loading') {
+            return;
+        }
+        var d = e.wheelDelta < 0 ? 'bottom' : 'top';
+
+        getMove(d, function (arr) {
+            c.update(arr, onUpdate);
+            s.update(arr, function () {
+                s.render();
+            });
+            c.trigger('mousemove', prevMousePos);
+        });
+    });
     c.addEventListener('mousemove', function (pos, index) {
         var s = this.items[index];
 

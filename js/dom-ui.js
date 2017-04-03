@@ -51,14 +51,13 @@ $(document).ready(function () {
         if (nowSymbol === "loading") {
             return;
         }
-
         switch (e.keyCode) {
             case 37:
                 getMove('left', function (arr) {
                     c.update(arr, onUpdate);
                     s.update(arr, function () {
                         s.render();
-                    }); 
+                    });
                     c.trigger('mousemove', prevMousePos);
                 });
                 break;
@@ -67,7 +66,7 @@ $(document).ready(function () {
                     c.update(arr, onUpdate);
                     s.update(arr, function () {
                         s.render();
-                    }); 
+                    });
                     c.trigger('mousemove', prevMousePos);
                 });
                 break;
@@ -85,70 +84,73 @@ $(document).ready(function () {
                     c.update(arr, onUpdate);
                     s.update(arr, function () {
                         s.render();
-                    }); 
+                    });
                     c.trigger('mousemove', prevMousePos);
                 });
                 break;
         }
     });
-    function getMove(dir, callback) {
-        if (typeof callback !== 'function') {
-            return -1;
-        }
-        var t = cache[nowSymbol];
-        switch (dir) {
-            case "left":
-                if (t.s + t.l >= t.data.length) {
-                    return;
-                }
-                $(".options[data-type=time] div.active").removeClass("active");
-                interval = {
-                    m: NaN
-                };
-                t.s = t.s + 1;
-                var tarry = t.data.slice(t.s, t.s + t.l);
+});
+function getMove(dir, callback) {
+    if (typeof callback !== 'function') {
+        return -1;
+    }
+    var t = cache[nowSymbol];
+    switch (dir) {
+        case "left":
+            if (t.s + t.l >= t.data.length) {
+                return;
+            }
+            $(".options[data-type=time] div.active").removeClass("active");
+            interval = {
+                m: NaN
+            };
+            t.s = t.s + 1;
+            var tarry = t.data.slice(t.s, t.s + t.l);
 
-                callback(tarry);
-                break;
-            case "right":
+            callback(tarry);
+            break;
+        case "right":
+            if (t.s <= 0) {
+                return;
+            }
+            $(".options[data-type=time] div.active").removeClass("active");
+            interval = {
+                m: NaN
+            };
+            t.s = t.s - 1;
+            var tarry = t.data.slice(t.s, t.s + t.l);
+
+            callback(tarry);
+            break;
+        case "top":
+            if (t.l <= 1) {
+                return;
+            }
+            $(".options[data-type=time] div.active").removeClass("active");
+            interval = {
+                m: NaN
+            };
+            t.l -= 1;
+            var tarry = t.data.slice(t.s, t.s + t.l);
+
+            callback(tarry);
+            break;
+        case "bottom":
+            if (t.l + t.s >= t.data.length) {
                 if (t.s <= 0) {
                     return;
                 }
-                $(".options[data-type=time] div.active").removeClass("active");
-                interval = {
-                    m: NaN
-                };
-                t.s = t.s - 1;
-                var tarry = t.data.slice(t.s, t.s + t.l);
+                t.s -= 1;
+            }
+            $(".options[data-type=time] div.active").removeClass("active");
+            interval = {
+                m: NaN
+            };
+            t.l += 1;
+            var tarry = t.data.slice(t.s, t.s + t.l);
 
-                callback(tarry);
-                break;
-            case "top":
-                if (t.l <= 1) {
-                    return;
-                }
-                $(".options[data-type=time] div.active").removeClass("active");
-                interval = {
-                    m: NaN
-                };
-                t.l -= 1;
-                var tarry = t.data.slice(t.s, t.s + t.l);
-
-                callback(tarry);
-                break;
-            case "bottom":
-                if (t.l + t.s >= t.data.length) {
-                    return;
-                }
-                $(".options[data-type=time] div.active").removeClass("active");
-                interval = {
-                    m: NaN
-                };
-                t.l += 1;
-                var tarry = t.data.slice(t.s, t.s + t.l);
-
-                callback(tarry);
-                break;
-        }
+            callback(tarry);
+            break;
     }
-});
+}
